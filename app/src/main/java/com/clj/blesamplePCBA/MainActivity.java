@@ -441,6 +441,7 @@ private void requestBluetoothPermissions() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_CODE_PERMISSION_LOCATION:
+            case PERMISSION_REQUEST_CODE :
                 if (grantResults.length > 0) {
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
@@ -454,11 +455,14 @@ private void requestBluetoothPermissions() {
 
     // Checks if the device has bluetooth enabled, and prompt user for connection if not.
     private void checkPermissions() {
+        boolean hasPermission = false;
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
                     new String[]{
@@ -466,10 +470,12 @@ private void requestBluetoothPermissions() {
                             Manifest.permission.BLUETOOTH_ADMIN,
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.BLUETOOTH_ADVERTISE,
-                            Manifest.permission.BLUETOOTH_CONNECT
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                            Manifest.permission.BLUETOOTH_SCAN
                     },
                     PERMISSION_REQUEST_CODE);
-        }
+        } else
+            hasPermission = true;
 
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
@@ -478,7 +484,8 @@ private void requestBluetoothPermissions() {
             int REQUEST_ENABLE_BT = 1;
             startActivityForResult(enableBluetoothRequest, REQUEST_ENABLE_BT);
             return;
-        }
+        } else if (hasPermission)
+            onPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION);
 
     }
 
