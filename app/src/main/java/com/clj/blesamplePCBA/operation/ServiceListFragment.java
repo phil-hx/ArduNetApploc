@@ -64,9 +64,10 @@ public class ServiceListFragment extends Fragment {
         txt_mac.setText(String.valueOf(getActivity().getString(R.string.mac) + mac));
 
         mResultAdapter.clear();
-        for (BluetoothGattService service : gatt.getServices()) {
-            mResultAdapter.addResult(service);
-        }
+        if (gatt!=null) // pb on falsly connected device
+            for (BluetoothGattService service : gatt.getServices()) {
+                mResultAdapter.addResult(service);
+            }
         mResultAdapter.notifyDataSetChanged();
     }
 
