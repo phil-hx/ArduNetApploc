@@ -3,6 +3,7 @@ package com.clj.blesamplePCBA.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -56,12 +57,13 @@ public class DeviceAdapter extends BaseAdapter {
     }
 
     public void clearScanDevice() {
-        for (int i = 0; i < bleDeviceList.size(); i++) {
+        for (int i =  bleDeviceList.size()-1; i >=0 ; i--) {
             BleDevice device = bleDeviceList.get(i);
             if (!BleManager.getInstance().isConnected(device)) {
                 bleDeviceList.remove(i);
-            }
+                }
         }
+        Log.i("DeviceAdapter", "End clear list  :" + bleDeviceList.size());
     }
 
     public void clear() {
@@ -118,6 +120,7 @@ public class DeviceAdapter extends BaseAdapter {
             holder.txt_mac.setText(mac);
             holder.txt_rssi.setText(String.valueOf(rssi));
             if (isConnected) {
+                Log.i("DeviceAdapter", "Device connected view  :" + position);
 
                 holder.txt_name.setTextColor(Color.rgb(51, 91, 210));
                 holder.txt_mac.setTextColor(Color.rgb(51, 91, 210));
