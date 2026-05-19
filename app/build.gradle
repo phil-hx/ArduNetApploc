@@ -12,11 +12,11 @@ android {
             storeFile file('C:\\Users\\Andy\\AndroidStudioProjects\\FastBle\\app\\build\\outputs\\apk\\release\\app-release-unsigned.apk')
         }
     }
-    compileSdkVersion 34
+    compileSdkVersion 36
     defaultConfig {
         applicationId "com.clj.blesamplePCBA"
         minSdkVersion 31
-        targetSdkVersion 34
+        targetSdkVersion 36
         versionCode 235
         versionName "2.4.à"
         vectorDrawables.useSupportLibrary = true

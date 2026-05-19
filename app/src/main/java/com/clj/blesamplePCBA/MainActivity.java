@@ -109,14 +109,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 private void requestBluetoothPermissions() {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
+            //ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) {
 
         ActivityCompat.requestPermissions(this,
                 new String[]{
                         Manifest.permission.BLUETOOTH,
-                        Manifest.permission.BLUETOOTH_ADMIN,
-                        Manifest.permission.ACCESS_FINE_LOCATION
+                        Manifest.permission.BLUETOOTH_ADMIN
+                        // Manifest.permission.ACCESS_FINE_LOCATION
                 },
                 PERMISSION_REQUEST_CODE);
     }
@@ -325,7 +326,7 @@ private void requestBluetoothPermissions() {
 
         BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
                 .setServiceUuids(serviceUuids)
-                .setDeviceName(true, names)
+                .setDeviceName(false, names)
                 .setDeviceMac(mac)
                 .setAutoConnect(isAutoConnect)
                 .setScanTimeOut(6000) // SCAN TIMEOUT IN ms
@@ -461,14 +462,14 @@ private void requestBluetoothPermissions() {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                //ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
                     new String[]{
                             Manifest.permission.BLUETOOTH,
                             Manifest.permission.BLUETOOTH_ADMIN,
-                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            //Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.BLUETOOTH_ADVERTISE,
                             Manifest.permission.BLUETOOTH_CONNECT,
                             Manifest.permission.BLUETOOTH_SCAN
@@ -492,7 +493,7 @@ private void requestBluetoothPermissions() {
     private void onPermissionGranted(String permission) {
         switch (permission) {
             case Manifest.permission.ACCESS_FINE_LOCATION:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !checkGPSIsOpen()) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && !checkGPSIsOpen()) {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.notifyTitle)
                             .setMessage(R.string.gpsNotifyMsg)
