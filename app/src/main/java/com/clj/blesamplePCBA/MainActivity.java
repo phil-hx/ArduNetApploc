@@ -387,6 +387,8 @@ private void requestBluetoothPermissions() {
                 progressDialog.dismiss();
                 mDeviceAdapter.addDevice(bleDevice);
                 mDeviceAdapter.notifyDataSetChanged();
+
+                setMtu(bleDevice,512);
             }
 
             @Override
@@ -545,3 +547,4 @@ private void requestBluetoothPermissions() {
         return mDeviceAdapter;
     }
 }
+
