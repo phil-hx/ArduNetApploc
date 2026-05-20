@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Fragment graph_fragment;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
+    private static final String  UUIDfiler = "dcf11b2d-f49b-4b01-997f-19ea13d405de";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -237,6 +239,9 @@ private void requestBluetoothPermissions() {
         progressDialog = new ProgressDialog(this);
 
         mDeviceAdapter = new DeviceAdapter(this);
+
+        et_uuid.setText(UUIDfiler);
+
         mDeviceAdapter.setOnDeviceClickListener(new DeviceAdapter.OnDeviceClickListener() {
             @Override
             public void onConnect(BleDevice bleDevice) {
@@ -256,6 +261,7 @@ private void requestBluetoothPermissions() {
             @Override
             public void onDetail(BleDevice bleDevice) {
                 if (BleManager.getInstance().isConnected(bleDevice)) {
+                    setMtu(bleDevice,512);
                     Intent intent = new Intent(MainActivity.this, OperationActivity.class);
                     intent.putExtra(OperationActivity.KEY_DATA, bleDevice);
                     startActivity(intent);
