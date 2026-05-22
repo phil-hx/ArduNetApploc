@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
@@ -464,6 +465,40 @@ public class BleBluetooth {
                 }
             }
         }
+
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorRead(gatt, descriptor, status);
+
+            Log.d("BluetoothGattCallback", "onDescriptorRead: ");
+            ;
+
+            // copy from read characteristic
+            // any needs for change ?
+            Iterator iterator = bleReadCallbackHashMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object callback = entry.getValue();
+                if (callback instanceof BleReadCallback) {
+                    BleReadCallback bleReadCallback = (BleReadCallback) callback;
+                    if (descriptor.getUuid().toString().equalsIgnoreCase(bleReadCallback.getKey())) {
+                        Handler handler = bleReadCallback.getHandler();
+                        if (handler != null) {
+                            Message message = handler.obtainMessage();
+                            message.what = BleMsg.MSG_CHA_READ_RESULT;
+                            message.obj = bleReadCallback;
+                            Bundle bundle = new Bundle();
+                            bundle.putInt(BleMsg.KEY_READ_BUNDLE_STATUS, status);
+                            bundle.putByteArray(BleMsg.KEY_READ_BUNDLE_VALUE, descriptor.getValue());
+                            message.setData(bundle);
+                            handler.sendMessage(message);
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {

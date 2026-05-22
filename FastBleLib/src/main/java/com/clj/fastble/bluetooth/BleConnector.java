@@ -36,6 +36,7 @@ public class BleConnector {
     private BluetoothGatt mBluetoothGatt;
     private BluetoothGattService mGattService;
     private BluetoothGattCharacteristic mCharacteristic;
+    private BluetoothGattDescriptor mDescriptor;
     private BleBluetooth mBleBluetooth;
     private Handler mHandler;
 
@@ -226,12 +227,21 @@ public class BleConnector {
         return this;
     }
 
-    public BleConnector withUUIDString(String serviceUUID, String characteristicUUID) {
-        return withUUID(formUUID(serviceUUID), formUUID(characteristicUUID));
+    private BleConnector withDescUUID(UUID serviceDescUUID ) {
+        if (serviceDescUUID != null && mBluetoothGatt != null && mCharacteristic != null) {
+            mDescriptor = mCharacteristic.getDescriptor(serviceDescUUID);
+        }
+        return this;
     }
 
-    private UUID formUUID(String uuid) {
-        return uuid == null ? null : UUID.fromString(uuid);
+
+    public BleConnector withUUIDString(String serviceUUID, String characteristicUUID) {
+        return withUUID(UUID.fromString(serviceUUID), UUID.fromString(characteristicUUID));
+    }
+
+
+    public BleConnector withUUIDStringDesc(String UUIDStringDesc) {
+        return withDescUUID(UUID.fromString(UUIDStringDesc));
     }
 
 
@@ -294,7 +304,7 @@ public class BleConnector {
         if (useCharacteristicDescriptor) {
             descriptor = characteristic.getDescriptor(characteristic.getUuid());
         } else {
-            descriptor = characteristic.getDescriptor(formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
+            descriptor = characteristic.getDescriptor(UUID.fromString(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
         }
         if (descriptor == null) {
             notifyMsgInit();
@@ -371,7 +381,7 @@ public class BleConnector {
         if (useCharacteristicDescriptor) {
             descriptor = characteristic.getDescriptor(characteristic.getUuid());
         } else {
-            descriptor = characteristic.getDescriptor(formUUID(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
+            descriptor = characteristic.getDescriptor(UUID.fromString(UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR));
         }
         if (descriptor == null) {
             indicateMsgInit();
@@ -439,6 +449,26 @@ public class BleConnector {
                 bleReadCallback.onReadFailure(new OtherException("this characteristic not support read!"));
         }
     }
+
+    /**
+     * read Descriptor
+     */
+    public void readCharacteristicDescriptor(BleReadCallback bleReadCallback, String uuid_read) {
+        if (mCharacteristic != null
+                && (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+
+            handleCharacteristicReadCallback(bleReadCallback, uuid_read);
+            if (!mBluetoothGatt.readDescriptor(mDescriptor)) {
+                readMsgInit();
+                if (bleReadCallback != null)
+                    bleReadCallback.onReadFailure(new OtherException("gatt readCharacteristic fail"));
+            }
+        } else {
+            if (bleReadCallback != null)
+                bleReadCallback.onReadFailure(new OtherException("this characteristic not support read!"));
+        }
+    }
+
 
     /**
      * rssi

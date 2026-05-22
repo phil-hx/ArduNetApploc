@@ -664,6 +664,35 @@ public class BleManager {
     }
 
     /**
+     * read Descriptor
+     *
+     * @param bleDevice
+     * @param uuid_service
+     * @param uuid_read
+     * @param uuid_descriptor_read
+     * @param callback
+     */
+    public void readDesciptor(BleDevice bleDevice,
+                              String uuid_service,
+                              String uuid_read,
+                              String uuid_descriptor_read,
+                              BleReadCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("BleReadCallback can not be Null!");
+        }
+
+        BleBluetooth bleBluetooth = multipleBluetoothController.getBleBluetooth(bleDevice);
+        if (bleBluetooth == null) {
+            callback.onReadFailure(new OtherException("This device is not connected!"));
+        } else {
+            bleBluetooth.newBleConnector()
+                    .withUUIDString(uuid_service, uuid_read)
+                    .withUUIDStringDesc(uuid_descriptor_read)
+                    .readCharacteristicDescriptor(callback, uuid_descriptor_read);
+        }
+    }
+
+    /**
      * read Rssi
      *
      * @param bleDevice
