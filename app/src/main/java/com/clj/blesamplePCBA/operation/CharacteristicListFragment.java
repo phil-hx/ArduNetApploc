@@ -4,12 +4,14 @@ package com.clj.blesamplePCBA.operation;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,17 +21,26 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.clj.blesamplePCBA.R;
+import com.clj.fastble.BleManager;
+import com.clj.fastble.callback.BleReadCallback;
+import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.exception.BleException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class CharacteristicListFragment extends Fragment {
 
     private ResultAdapter mResultAdapter;
+
+    private String descUUIDFormat = "0000%4d-0000-1000-8000-00805f9b34fb";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -149,9 +160,38 @@ public class CharacteristicListFragment extends Fragment {
                 holder.txt_type = (TextView) convertView.findViewById(R.id.txt_type);
                 holder.img_next = (ImageView) convertView.findViewById(R.id.img_next);
             }
-
             BluetoothGattCharacteristic characteristic = characteristicList.get(position);
             String uuid = characteristic.getUuid().toString();
+            final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
+
+            String sUUID2901 = String.format(descUUIDFormat,2901);
+            UUID UUID2901 =  UUID.fromString(sUUID2901);
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID2901);
+            if (descriptor!= null){
+                BleManager.getInstance().readDesciptor(
+                        bleDevice,
+                        characteristic.getService().getUuid().toString(),
+                        uuid,
+                        sUUID2901,
+                        new BleReadCallback() {
+                            @Override
+                            public void onReadSuccess(final byte[] data) {
+                                Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: "+ sUUID2901);
+                                ((OperationActivity) getActivity()).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        String str = new String(data, StandardCharsets.UTF_8);
+                                        holder.txt_uuid.append( " ("+ str + ")");
+                                    }
+                                });
+                            }
+                            @Override
+                            public void onReadFailure(final BleException exception) {
+                                Log.d("CharacteristicOperationFragment", "onReadError descriptor 2901 from : "+ uuid);
+                            }
+                        });
+
+            }
 
             holder.txt_title.setText(String.valueOf(getActivity().getString(R.string.characteristic) + "（" + position + ")"));
             holder.txt_uuid.setText(uuid);
