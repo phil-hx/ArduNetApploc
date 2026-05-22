@@ -162,39 +162,46 @@ public class CharacteristicListFragment extends Fragment {
             }
             BluetoothGattCharacteristic characteristic = characteristicList.get(position);
             String uuid = characteristic.getUuid().toString();
-            final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
+            holder.txt_title.setText(String.valueOf(getActivity().getString(R.string.characteristic) + "（" + position + ")"));
+            holder.txt_uuid.setText(uuid);
 
             String sUUID2901 = String.format(descUUIDFormat,2901);
             UUID UUID2901 =  UUID.fromString(sUUID2901);
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID2901);
-            if (descriptor!= null){
-                BleManager.getInstance().readDesciptor(
-                        bleDevice,
-                        characteristic.getService().getUuid().toString(),
-                        uuid,
-                        sUUID2901,
-                        new BleReadCallback() {
-                            @Override
-                            public void onReadSuccess(final byte[] data) {
-                                Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: "+ sUUID2901);
-                                ((OperationActivity) getActivity()).runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        String str = new String(data, StandardCharsets.UTF_8);
-                                        holder.txt_uuid.append( " ("+ str + ")");
-                                    }
-                                });
-                            }
-                            @Override
-                            public void onReadFailure(final BleException exception) {
-                                Log.d("CharacteristicOperationFragment", "onReadError descriptor 2901 from : "+ uuid);
-                            }
-                        });
+            if (descriptor!= null )
+                if (descriptor.getValue() == null){
+                    final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
+                    BleManager.getInstance().readDesciptor(
+                            bleDevice,
+                            characteristic.getService().getUuid().toString(),
+                            uuid,
+                            sUUID2901,
+                            new BleReadCallback() {
+                                private TextView txt_DescUUID= holder.txt_uuid;
+                                private int pos = position;
 
-            }
+                                @Override
+                                public void onReadSuccess(final byte[] data) {
+                                    Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: " + pos );
+                                //    ((OperationActivity) getActivity()).runOnUiThread(new Runnable() {
+                                //        @Override
+                                //        public void run() {
+                                //            String str = new String(data, StandardCharsets.UTF_8);
+                                //            txt_DescUUID.append( " ("+ str + ")");
+                                //        }
+                                //    });
+                                }
+                                @Override
+                                public void onReadFailure(final BleException exception) {
+                                    Log.d("CharacteristicOperationFragment", "onReadError descriptor 2901 from : "+ uuid);
+                                }
+                            });
 
-            holder.txt_title.setText(String.valueOf(getActivity().getString(R.string.characteristic) + "（" + position + ")"));
-            holder.txt_uuid.setText(uuid);
+                } else {
+                    String str = new String(descriptor.getValue(), StandardCharsets.UTF_8);
+                    holder.txt_uuid.append(" (" + str + ")");
+                }
+
 
             StringBuilder property = new StringBuilder();
             int charaProp = characteristic.getProperties();
