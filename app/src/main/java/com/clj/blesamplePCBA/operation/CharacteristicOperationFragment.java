@@ -1,12 +1,16 @@
 package com.clj.blesamplePCBA.operation;
 
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Build;
 import android.os.Bundle;
 
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +36,7 @@ import com.clj.fastble.utils.HexUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class CharacteristicOperationFragment extends Fragment {
@@ -44,6 +49,8 @@ public class CharacteristicOperationFragment extends Fragment {
 
     private LinearLayout layout_container;
     private List<String> childList = new ArrayList<>();
+
+    private String descUUIDFormat = "0000%4d-0000-1000-8000-00805f9b34fb";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,6 +66,49 @@ public class CharacteristicOperationFragment extends Fragment {
     public void showData() {
         final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
         final BluetoothGattCharacteristic characteristic = ((OperationActivity) getActivity()).getCharacteristic();
+
+        String sUUID2901 = String.format(descUUIDFormat,2901);
+        UUID UUID2901 =  UUID.fromString(sUUID2901);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID2901);
+
+        BleManager.getInstance().readDesciptor(
+                bleDevice,
+                characteristic.getService().getUuid().toString(),
+                characteristic.getUuid().toString(),
+                sUUID2901,
+                new BleReadCallback() {
+
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                    @Override
+                    public void onReadSuccess(final byte[] data) {
+                        Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: "+ sUUID2901);
+
+                    }
+
+                    @Override
+                    public void onReadFailure(final BleException exception) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //addText(txt, exception.toString());
+                            }
+                        });
+                    }
+                });
+
+
+    final List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
+
+        for (BluetoothGattDescriptor d : descriptors){
+
+            String descUUID = d.getUuid().toString();
+            byte[] dBytesV=d.getValue();
+            if (dBytesV!= null) {
+                String descValue = new String(dBytesV, StandardCharsets.UTF_8);
+                Log.i("CharacteristicOperationFragment", "Descriptor : " + descValue);
+            }
+            Log.i("CharacteristicOperationFragment", "Descriptor : " + descUUID.substring(0 , 8));
+        }
         final int charaProp = ((OperationActivity) getActivity()).getCharaProp();
         String child = characteristic.getUuid().toString() + String.valueOf(charaProp);
 
@@ -397,6 +447,10 @@ public class CharacteristicOperationFragment extends Fragment {
 
     private static String[] unpackageBLEPacket(String packetData)
     {
+        if (packetData.length()<2){
+            String[] sensorData = {packetData};
+            return sensorData;
+        }
         String[] sensorData = packetData.split("/");
         for (int i = 0;i < sensorData.length;i++)
         {
