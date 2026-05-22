@@ -12,7 +12,7 @@ android {
             storeFile file('C:\\Users\\Andy\\AndroidStudioProjects\\FastBle\\app\\build\\outputs\\apk\\release\\app-release-unsigned.apk')
         }
     }
-    compileSdkVersion 36
+    compileSdk 34
     defaultConfig {
         applicationId "com.clj.blesamplePCBA"
         minSdkVersion 31
