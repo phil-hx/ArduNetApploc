@@ -78,7 +78,6 @@ public class CharacteristicOperationFragment extends Fragment {
                 sUUID2901,
                 new BleReadCallback() {
 
-                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onReadSuccess(final byte[] data) {
                         Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: "+ sUUID2901);
