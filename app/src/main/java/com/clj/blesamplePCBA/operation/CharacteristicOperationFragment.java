@@ -1,8 +1,6 @@
 package com.clj.blesamplePCBA.operation;
 
 import android.annotation.TargetApi;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.os.Build;
@@ -67,36 +65,35 @@ public class CharacteristicOperationFragment extends Fragment {
         final BleDevice bleDevice = ((OperationActivity) getActivity()).getBleDevice();
         final BluetoothGattCharacteristic characteristic = ((OperationActivity) getActivity()).getCharacteristic();
 
-        String sUUID2901 = String.format(descUUIDFormat,2901);
-        UUID UUID2901 =  UUID.fromString(sUUID2901);
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID2901);
+        String Desc2904Val = "";
 
-        BleManager.getInstance().readDesciptor(
-                bleDevice,
-                characteristic.getService().getUuid().toString(),
-                characteristic.getUuid().toString(),
-                sUUID2901,
-                new BleReadCallback() {
+        String sUUIDesc = String.format(descUUIDFormat,2904);
+        UUID UUIDDesc =  UUID.fromString(sUUIDesc);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUIDDesc);
+        if (descriptor!=null)
+            if (descriptor.getValue()==null)
+                BleManager.getInstance().readDesciptor(
+                    bleDevice,
+                    characteristic.getService().getUuid().toString(),
+                    characteristic.getUuid().toString(),
+                    sUUIDesc,
+                    new BleReadCallback() {
 
-                    @Override
-                    public void onReadSuccess(final byte[] data) {
-                        Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor: "+ sUUID2901);
+                        @Override
+                        public void onReadSuccess(final byte[] data) {
+                            Log.d("CharacteristicOperationFragment", "onReadSuccess descriptor 2904 ");
+                        }
 
-                    }
-
-                    @Override
-                    public void onReadFailure(final BleException exception) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //addText(txt, exception.toString());
-                            }
-                        });
-                    }
+                        @Override
+                        public void onReadFailure(final BleException exception) {
+                            Log.d("CharacteristicOperationFragment", "onReadError descriptor 2904 ");
+                        }
                 });
+        else
+            if (descriptor.getValue().length > 3)
+                Desc2904Val = String.format("%d",descriptor.getValue()[0]);
 
-
-    final List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
+        final List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
 
         for (BluetoothGattDescriptor d : descriptors){
 
@@ -108,6 +105,15 @@ public class CharacteristicOperationFragment extends Fragment {
             }
             Log.i("CharacteristicOperationFragment", "Descriptor : " + descUUID.substring(0 , 8));
         }
+
+        sUUIDesc = String.format(descUUIDFormat,2901);
+        UUIDDesc=  UUID.fromString(sUUIDesc);
+        descriptor = characteristic.getDescriptor(UUIDDesc);
+        String Desc2901Val = "";
+        if (descriptor!= null && descriptor.getValue() != null){
+            Desc2901Val= new String(descriptor.getValue(), StandardCharsets.UTF_8);
+        }
+
         final int charaProp = ((OperationActivity) getActivity()).getCharaProp();
         String child = characteristic.getUuid().toString() + String.valueOf(charaProp);
 
@@ -117,7 +123,10 @@ public class CharacteristicOperationFragment extends Fragment {
         }
 
         if (childList.contains(child)) {
-            layout_container.findViewWithTag(bleDevice.getKey() + characteristic.getUuid().toString() + charaProp).setVisibility(View.VISIBLE);
+            View view = layout_container.findViewWithTag(bleDevice.getKey() + characteristic.getUuid().toString() + charaProp);
+            view.setVisibility(View.VISIBLE);
+            final TextView txt_title2 = (TextView) view.findViewById(R.id.txt_title2);
+            txt_title2.setText("("+Desc2904Val +")");
         } else {
             childList.add(child);
 
@@ -125,7 +134,11 @@ public class CharacteristicOperationFragment extends Fragment {
             view.setTag(bleDevice.getKey() + characteristic.getUuid().toString() + charaProp);
             LinearLayout layout_add = (LinearLayout) view.findViewById(R.id.layout_add);
             final TextView txt_title = (TextView) view.findViewById(R.id.txt_title);
-            txt_title.setText(String.valueOf(characteristic.getUuid().toString() + getActivity().getString(R.string.data_changed)));
+            String sep = "  ";
+            txt_title.setText(String.valueOf(characteristic.getUuid().toString() + sep +
+                    Desc2901Val + sep+ getActivity().getString(R.string.data_changed)) );
+            final TextView txt_title2 = (TextView) view.findViewById(R.id.txt_title2);
+            txt_title2.setText("("+Desc2904Val +")");
             final TextView txt = (TextView) view.findViewById(R.id.txt);
             txt.setMovementMethod(ScrollingMovementMethod.getInstance());
 
@@ -148,7 +161,8 @@ public class CharacteristicOperationFragment extends Fragment {
                                         public void onReadSuccess(final byte[] data) {
                                             // DATA TESTING
                                             String str = new String(data, StandardCharsets.UTF_8);
-                                            String[] sensorData = unpackageBLEPacket(str);
+                                            String[] sensorData = {String.format("[%d] ",str.length() ), str} ;
+                                            //sensorData = unpackageBLEPacket(str);
                                             showToast(str);
 
                                             String outputToScreen = "";
